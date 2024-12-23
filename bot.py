@@ -19,6 +19,7 @@ from concurrent.futures import ThreadPoolExecutor
 from helpers.error_manager import ErrorManager
 from telegram.error import TimedOut, NetworkError, RetryAfter
 import backoff
+from http.server import HTTPServer, BaseHTTPRequestHandler
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -437,7 +438,27 @@ async def rclone_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         parse_mode='MarkdownV2'
     )
 
+class HealthCheckHandler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        self.send_response(200)
+        self.send_header('Content-type', 'text/plain')
+        self.end_headers()
+        self.wfile.write(b"OK")
+
+def run_health_server():
+    server = HTTPServer(('0.0.0.0', 8080), HealthCheckHandler)
+    server.serve_forever()
+
+# Add this before main():
+def start_health_server():
+    thread = threading.Thread(target=run_health_server)
+    thread.daemon = True
+    thread.start()
+
 def main():
+    # Add this line at the start of main()
+    start_health_server()
+    
     # Create application with custom settings and error handlers
     application = (
         Application.builder()
