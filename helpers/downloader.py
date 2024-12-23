@@ -49,8 +49,6 @@ class M3u8Downloader:
                     break
                     
                 line = line.decode().strip()
-                
-                # Debug log
                 logging.info(f"yt-dlp output: {line}")
                 
                 if '[download]' in line:
@@ -63,44 +61,47 @@ class M3u8Downloader:
                                 f"👤 ইউজার: {self.username}\n"
                             )
                             
-                            # Try to parse percentage
+                            # Extract percentage
                             if '%' in line:
-                                percentage = line.split('%')[0].split()[-1]
-                                bar_length = 20
                                 try:
+                                    percentage = line.split()[1].replace('%', '')
+                                    bar_length = 20
                                     filled_length = int(float(percentage) * bar_length / 100)
                                     bar = '█' * filled_length + '░' * (bar_length - filled_length)
                                     progress_text += f"┌ প্রোগ্রেস: {percentage}%\n├ {bar}\n"
                                 except:
                                     pass
                             
-                            # Try to parse size
-                            if 'of ~' in line:
+                            # Extract size
+                            if 'of' in line:
                                 try:
-                                    size = line.split('of ~')[1].split()[0:2]
-                                    size = ' '.join(size)
+                                    size_parts = line.split('of')[1].strip().split()[0:2]
+                                    size = ' '.join(size_parts)
                                     progress_text += f"├ সাইজ: {size}\n"
                                 except:
                                     pass
                             
-                            # Try to parse speed
+                            # Extract speed
                             if 'at' in line:
                                 try:
-                                    speed = line.split('at')[1].split()[0]
-                                    progress_text += f"├ স্পীড: {speed}\n"
+                                    speed = line.split('at')[1].strip().split()[0]
+                                    if speed != "Unknown":
+                                        progress_text += f"├ স্পীড: {speed}/s\n"
                                 except:
                                     pass
                             
-                            # Try to parse ETA
+                            # Extract ETA
                             if 'ETA' in line:
                                 try:
                                     eta = line.split('ETA')[1].strip()
-                                    progress_text += f"└ বাকি সময়: {eta}"
+                                    if eta != "Unknown":
+                                        progress_text += f"└ বাকি সময়: {eta}"
                                 except:
                                     pass
                             
                             await self.status_message.edit_text(progress_text)
                             last_update_time = current_time
+                            
                         except Exception as e:
                             logging.error(f"Error updating status: {str(e)}")
                             continue
