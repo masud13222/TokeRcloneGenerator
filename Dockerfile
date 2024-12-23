@@ -1,21 +1,16 @@
-FROM python:3.10-slim-buster
+FROM python:3.9-slim
 
 WORKDIR /app
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
-    ffmpeg \
-    mediainfo \
-    libmediainfo0v5 \
-    python3-pip \
-    && rm -rf /var/lib/apt/lists/*
-
-# Install yt-dlp globally
-RUN pip install -U yt-dlp
-
-COPY . .
+# Install required packages
+COPY requirements.txt .
 RUN pip install -r requirements.txt
 
-# Expose port 8080
+# Copy all files
+COPY . .
+
+# Expose port for health check
 EXPOSE 8080
+
+# Run bot
 CMD ["python", "bot.py"] 
