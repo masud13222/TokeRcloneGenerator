@@ -91,4 +91,4 @@ class M3u8Downloader:
                 raise Exception("Download failed: File not found")
                 
         except Exception as e:
-            raise Exception(f"Download error: {str(e)}")
+            raise Exception(f"Download error: {str(e)}") 
