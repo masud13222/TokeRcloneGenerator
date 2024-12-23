@@ -41,6 +41,7 @@ class M3u8Downloader:
             )
             
             last_update_time = time.time()
+            downloading_started = False
             
             while True:
                 line = await process.stdout.readline()
@@ -49,35 +50,64 @@ class M3u8Downloader:
                     
                 line = line.decode().strip()
                 
+                # Debug log
+                logging.info(f"yt-dlp output: {line}")
+                
                 if '[download]' in line:
+                    downloading_started = True
                     current_time = time.time()
                     if current_time - last_update_time >= 3:
                         try:
-                            if 'of ~' in line and 'at' in line and 'ETA' in line:
-                                parts = line.split()
-                                percentage = parts[1].replace('%', '')
-                                size = ' '.join(parts[3:5]).replace('~', '')
-                                speed = parts[6]
-                                eta = parts[8]
-                                
+                            progress_text = (
+                                f"📥 ডাউনলোড হচ্ছে...\n\n"
+                                f"👤 ইউজার: {self.username}\n"
+                            )
+                            
+                            # Try to parse percentage
+                            if '%' in line:
+                                percentage = line.split('%')[0].split()[-1]
                                 bar_length = 20
-                                filled_length = int(float(percentage) * bar_length / 100)
-                                bar = '█' * filled_length + '░' * (bar_length - filled_length)
-                                
-                                progress_text = (
-                                    f"📥 ডাউনলোড হচ্ছে...\n\n"
-                                    f"👤 ইউজার: {self.username}\n"
-                                    f"┌ প্রোগ্রেস: {percentage}%\n"
-                                    f"├ {bar}\n"
-                                    f"├ সাইজ: {size}\n"
-                                    f"├ স্পীড: {speed}\n"
-                                    f"└ বাকি সময়: {eta}"
-                                )
-                                
-                                await self.status_message.edit_text(progress_text)
-                                last_update_time = current_time
-                        except:
+                                try:
+                                    filled_length = int(float(percentage) * bar_length / 100)
+                                    bar = '█' * filled_length + '░' * (bar_length - filled_length)
+                                    progress_text += f"┌ প্রোগ্রেস: {percentage}%\n├ {bar}\n"
+                                except:
+                                    pass
+                            
+                            # Try to parse size
+                            if 'of ~' in line:
+                                try:
+                                    size = line.split('of ~')[1].split()[0:2]
+                                    size = ' '.join(size)
+                                    progress_text += f"├ সাইজ: {size}\n"
+                                except:
+                                    pass
+                            
+                            # Try to parse speed
+                            if 'at' in line:
+                                try:
+                                    speed = line.split('at')[1].split()[0]
+                                    progress_text += f"├ স্পীড: {speed}\n"
+                                except:
+                                    pass
+                            
+                            # Try to parse ETA
+                            if 'ETA' in line:
+                                try:
+                                    eta = line.split('ETA')[1].strip()
+                                    progress_text += f"└ বাকি সময়: {eta}"
+                                except:
+                                    pass
+                            
+                            await self.status_message.edit_text(progress_text)
+                            last_update_time = current_time
+                        except Exception as e:
+                            logging.error(f"Error updating status: {str(e)}")
                             continue
+            
+            if not downloading_started:
+                await self.status_message.edit_text("❌ ডাউনলোড শুরু করতে ব্যর্থ হয়েছে।")
+                return None
             
             await process.wait()
             
