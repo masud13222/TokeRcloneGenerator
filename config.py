@@ -2,9 +2,10 @@ import os
 from pymongo import MongoClient
 
 class Config:
-    API_ID = "17462098"
-    API_HASH = "149b3719dc136ddd05624dc69190dffd"
-    BOT_TOKEN = "7963788326:AAH_MhtEld_qyqLF4zXlS1tZP6uGnYl4oe4"
+    # Get from environment variables
+    API_ID = os.environ.get("API_ID")
+    API_HASH = os.environ.get("API_HASH")
+    BOT_TOKEN = os.environ.get("BOT_TOKEN")
     
     # Default Rclone configs
     RCLONE_CLIENT_ID = "202264815644.apps.googleusercontent.com"
