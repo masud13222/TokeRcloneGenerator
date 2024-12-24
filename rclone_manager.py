@@ -13,8 +13,8 @@ class RcloneManager:
         self.SCOPES = ['https://www.googleapis.com/auth/drive']
         self.CLIENT_CONFIG = {
             "installed": {
-                "client_id": Config.RCLONE_CLIENT_ID,
-                "client_secret": Config.RCLONE_CLIENT_SECRET,
+                "client_id": "202264815644.apps.googleusercontent.com",
+                "client_secret": "X4Z3ca8xfWDb1Voo-F9a7ZxJ",
                 "auth_uri": "https://accounts.google.com/o/oauth2/auth",
                 "token_uri": "https://oauth2.googleapis.com/token",
                 "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
@@ -112,7 +112,7 @@ token = {json.dumps({
     "access_token": creds.token,
     "token_type": "Bearer",
     "refresh_token": creds.refresh_token,
-    "expiry": creds.expiry.strftime("%Y-%m-%dT%H:%M:%S.%f%z")
+    "expiry": creds.expiry.strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + "+0600"
 })}
 team_drive =
 """
