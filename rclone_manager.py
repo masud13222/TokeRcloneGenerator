@@ -121,3 +121,11 @@ team_drive =
         except Exception as e:
             print(f"Failed to refresh token: {str(e)}")
             return None 
+
+    async def save_token(self, user_id: int, auth_input: str):
+        """Save token after authorization (alias for generate_config)"""
+        try:
+            return await self.generate_config("gdrive", auth_input)
+        except Exception as e:
+            print(f"Failed to save token: {str(e)}")
+            return None 
