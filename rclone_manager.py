@@ -67,6 +67,9 @@ class RcloneManager:
             # Get token
             token = flow.fetch_token(code=auth_code)
 
+            # Calculate expiry time (current time + 1 hour)
+            expiry_time = datetime.now().timestamp() + 3600
+
             # Create rclone config
             config = f"""[gdrive]
 type = drive
@@ -74,7 +77,7 @@ token = {json.dumps({
     "access_token": token["access_token"],
     "token_type": "Bearer",
     "refresh_token": token["refresh_token"],
-    "expiry": datetime.fromtimestamp(token["expires_in"]).strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + "+0600"
+    "expiry": datetime.fromtimestamp(expiry_time).strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + "+0600"
 })}
 team_drive ="""
 
@@ -110,6 +113,9 @@ team_drive ="""
             # Refresh token
             creds.refresh(Request())
             
+            # Calculate expiry time (current time + 1 hour)
+            expiry_time = datetime.now().timestamp() + 3600
+
             # Create new rclone config
             new_config = f"""[gdrive]
 type = drive
@@ -117,7 +123,7 @@ token = {json.dumps({
     "access_token": creds.token,
     "token_type": "Bearer",
     "refresh_token": creds.refresh_token,
-    "expiry": creds.expiry.strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + "+0600"
+    "expiry": datetime.fromtimestamp(expiry_time).strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + "+0600"
 })}
 team_drive ="""
 
