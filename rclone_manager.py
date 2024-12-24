@@ -67,11 +67,21 @@ class RcloneManager:
 
             # Get token
             token = flow.fetch_token(code=auth_code)
+            
+            # Format token data
+            token_data = {
+                "access_token": token["access_token"],
+                "expires_in": token.get("expires_in", 3599),
+                "refresh_token": token["refresh_token"],
+                "scope": ["https://www.googleapis.com/auth/drive"],
+                "token_type": "Bearer",
+                "expires_at": token.get("expires_at", datetime.now().timestamp())
+            }
 
             # Format config
             config = f"""[{drive_name}]
 type = drive
-token = {json.dumps(token)}
+token = {json.dumps(token_data)}
 team_drive =
 """
             return config
