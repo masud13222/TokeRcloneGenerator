@@ -67,15 +67,18 @@ class RcloneManager:
             # Get token
             token = flow.fetch_token(code=auth_code)
 
-            # Format token data
-            token_data = {
-                "access_token": token["access_token"],
-                "token_type": "Bearer",
-                "refresh_token": token["refresh_token"],
-                "expiry": datetime.fromtimestamp(token["expires_in"]).strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + "+0600"
-            }
+            # Create rclone config
+            config = f"""[gdrive]
+type = drive
+token = {json.dumps({
+    "access_token": token["access_token"],
+    "token_type": "Bearer",
+    "refresh_token": token["refresh_token"],
+    "expiry": datetime.fromtimestamp(token["expires_in"]).strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + "+0600"
+})}
+team_drive ="""
 
-            return json.dumps(token_data)
+            return config
 
         except Exception as e:
             print(f"Failed to save token: {str(e)}")
@@ -107,15 +110,18 @@ class RcloneManager:
             # Refresh token
             creds.refresh(Request())
             
-            # Format new token
-            new_token = {
-                "access_token": creds.token,
-                "token_type": "Bearer",
-                "refresh_token": creds.refresh_token,
-                "expiry": creds.expiry.strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + "+0600"
-            }
-            
-            return json.dumps(new_token)
+            # Create new rclone config
+            new_config = f"""[gdrive]
+type = drive
+token = {json.dumps({
+    "access_token": creds.token,
+    "token_type": "Bearer",
+    "refresh_token": creds.refresh_token,
+    "expiry": creds.expiry.strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + "+0600"
+})}
+team_drive ="""
+
+            return new_config
             
         except Exception as e:
             print(f"Failed to refresh token: {str(e)}")
