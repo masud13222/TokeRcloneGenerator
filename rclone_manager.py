@@ -55,7 +55,7 @@ class RcloneManager:
                 "access_token": token["access_token"],
                 "token_type": "Bearer",
                 "refresh_token": token["refresh_token"],
-                "expiry": token["expires_in"]
+                "expiry": datetime.fromtimestamp(token["expires_in"]).strftime("%Y-%m-%dT%H:%M:%S.%f%z")
             }
             
             return json.dumps(token_dict)
@@ -95,7 +95,7 @@ class RcloneManager:
                 "access_token": creds.token,
                 "token_type": "Bearer",
                 "refresh_token": creds.refresh_token,
-                "expiry": int(creds.expiry.timestamp())
+                "expiry": creds.expiry.strftime("%Y-%m-%dT%H:%M:%S.%f%z")
             }
             
             return json.dumps(new_token)
