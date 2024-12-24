@@ -59,7 +59,22 @@ class RcloneManager:
                 "expiry": expiry_time.astimezone().strftime("%Y-%m-%dT%H:%M:%S.%f%z")
             }
             
-            return json.dumps(token_dict)
+            # Create minimal rclone config
+            config = configparser.ConfigParser()
+            config['test'] = {
+                'type': 'drive',
+                'token': json.dumps(token_dict),
+                'team_drive': ''
+            }
+            
+            # Convert to string format
+            output = ''
+            for section in config.sections():
+                output += f'[{section}]\n'
+                for key, value in config[section].items():
+                    output += f'{key} = {value}\n'
+            
+            return output
             
         except Exception as e:
             print(f"Failed to save token: {str(e)}")
@@ -99,7 +114,22 @@ class RcloneManager:
                 "expiry": creds.expiry.astimezone().strftime("%Y-%m-%dT%H:%M:%S.%f%z")
             }
             
-            return json.dumps(new_token)
+            # Create minimal rclone config
+            config = configparser.ConfigParser()
+            config['test'] = {
+                'type': 'drive',
+                'token': json.dumps(new_token),
+                'team_drive': ''
+            }
+            
+            # Convert to string format
+            output = ''
+            for section in config.sections():
+                output += f'[{section}]\n'
+                for key, value in config[section].items():
+                    output += f'{key} = {value}\n'
+            
+            return output
             
         except Exception as e:
             print(f"Failed to refresh token: {str(e)}")
