@@ -1,7 +1,6 @@
 import os
 import json
 from datetime import datetime
-from config import Config
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
@@ -11,6 +10,7 @@ from urllib.parse import parse_qs, urlparse
 class RcloneManager:
     def __init__(self):
         self.SCOPES = ['https://www.googleapis.com/auth/drive']
+        # Rclone's default client configuration
         self.CLIENT_CONFIG = {
             "installed": {
                 "client_id": "202264815644.apps.googleusercontent.com",
@@ -47,8 +47,8 @@ class RcloneManager:
         except:
             return None
         
-    async def generate_config(self, drive_name: str, auth_input: str):
-        """Generate rclone config from authorization code or URL"""
+    async def save_token(self, user_id: int, auth_input: str):
+        """Save token after authorization"""
         try:
             # Check if input is URL or code
             auth_code = self.extract_code_from_url(auth_input) if '?' in auth_input else auth_input
@@ -62,32 +62,24 @@ class RcloneManager:
                 scopes=self.SCOPES
             )
 
-            # Set redirect URI
             flow.redirect_uri = "http://127.0.0.1:53682/"
 
             # Get token
             token = flow.fetch_token(code=auth_code)
-            
+
             # Format token data
             token_data = {
                 "access_token": token["access_token"],
-                "expires_in": token.get("expires_in", 3599),
-                "refresh_token": token["refresh_token"],
-                "scope": ["https://www.googleapis.com/auth/drive"],
                 "token_type": "Bearer",
-                "expires_at": token.get("expires_at", datetime.now().timestamp())
+                "refresh_token": token["refresh_token"],
+                "expiry": datetime.fromtimestamp(token["expires_in"]).strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + "+0600"
             }
 
-            # Format config
-            config = f"""[{drive_name}]
-type = drive
-token = {json.dumps(token_data)}
-team_drive =
-"""
-            return config
+            return json.dumps(token_data)
 
         except Exception as e:
-            return f"Error: {str(e)}"
+            print(f"Failed to save token: {str(e)}")
+            return None
         
     async def refresh_token(self, rclone_conf: str):
         """Refresh token from rclone.conf file"""
@@ -115,27 +107,16 @@ team_drive =
             # Refresh token
             creds.refresh(Request())
             
-            # Format new config
-            new_config = f"""[gdrive]
-type = drive
-token = {json.dumps({
-    "access_token": creds.token,
-    "token_type": "Bearer",
-    "refresh_token": creds.refresh_token,
-    "expiry": creds.expiry.strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + "+0600"
-})}
-team_drive =
-"""
-            return new_config
+            # Format new token
+            new_token = {
+                "access_token": creds.token,
+                "token_type": "Bearer",
+                "refresh_token": creds.refresh_token,
+                "expiry": creds.expiry.strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + "+0600"
+            }
+            
+            return json.dumps(new_token)
             
         except Exception as e:
             print(f"Failed to refresh token: {str(e)}")
-            return None 
-
-    async def save_token(self, user_id: int, auth_input: str):
-        """Save token after authorization (alias for generate_config)"""
-        try:
-            return await self.generate_config("gdrive", auth_input)
-        except Exception as e:
-            print(f"Failed to save token: {str(e)}")
-            return None 
+            return None
