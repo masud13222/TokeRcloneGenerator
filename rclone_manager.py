@@ -22,7 +22,7 @@ class RcloneManager:
             }
         }
         
-    def get_auth_url(self):
+    def get_auth_url(self, user_id: int = None):
         """Generate authorization URL for Google Drive"""
         redirect_uri = "http://127.0.0.1:53682/"
         
