@@ -77,7 +77,7 @@ token = {json.dumps({
     "access_token": token["access_token"],
     "token_type": "Bearer",
     "refresh_token": token["refresh_token"],
-    "expiry": datetime.fromtimestamp(expiry_time).strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + "+0600"
+    "expiry": datetime.fromtimestamp(expiry_time).strftime("%Y-%m-%dT%H:%M:%S.%f") + "+0600"
 })}
 team_drive ="""
 
@@ -123,7 +123,7 @@ token = {json.dumps({
     "access_token": creds.token,
     "token_type": "Bearer",
     "refresh_token": creds.refresh_token,
-    "expiry": datetime.fromtimestamp(expiry_time).strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + "+0600"
+    "expiry": datetime.fromtimestamp(expiry_time).strftime("%Y-%m-%dT%H:%M:%S.%f") + "+0600"
 })}
 team_drive ="""
 
