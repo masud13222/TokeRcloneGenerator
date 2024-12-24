@@ -91,20 +91,10 @@ async def save_command(client, message: Message):
         if "code=" in code:
             code = code.split("code=")[1].split("&")[0]
         
-        success = await rclone_manager.save_token(user_id, code)
-        if success:
-            # Generate rclone.conf
-            config_text = f"""[gdrive]
-type = drive
-client_id = {Config.RCLONE_CLIENT_ID}
-client_secret = {Config.RCLONE_CLIENT_SECRET}
-scope = drive
-token = {success}
-root_folder_id =
-team_drive ="""
-
+        config = await rclone_manager.save_token(user_id, code)
+        if config:
             with open("rclone.conf", "w") as f:
-                f.write(config_text)
+                f.write(config)
                 
             await message.reply_document(
                 "rclone.conf",
@@ -190,21 +180,11 @@ async def refresh_command(client, message: Message):
                 f.write(file_content.getvalue())
             
             # Refresh token
-            new_token = await rclone_manager.refresh_token("temp_rclone.conf")
+            new_config = await rclone_manager.refresh_token("temp_rclone.conf")
             
-            if new_token:
-                # Generate new rclone.conf
-                config_text = f"""[gdrive]
-type = drive
-client_id = {Config.RCLONE_CLIENT_ID}
-client_secret = {Config.RCLONE_CLIENT_SECRET}
-scope = drive
-token = {new_token}
-root_folder_id =
-team_drive ="""
-
+            if new_config:
                 with open("rclone.conf", "w") as f:
-                    f.write(config_text)
+                    f.write(new_config)
                     
                 await message.reply_document(
                     "rclone.conf",
